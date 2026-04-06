@@ -1,0 +1,176 @@
+---
+title: "2026-04-06_hw06"
+author: "Chris"
+date: "2026-04-06"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: cosmo
+    css: style.css
+---
+
+
+```{r message=FALSE}
+library(tidyverse)
+library(nlme)
+```
+
+
+# Read the Data
+
+```{r}
+df_dental <- read_table("data/HW6-dental.txt") |>
+  janitor::clean_names() |>
+  mutate(
+    gender = factor(gender, levels = c(0, 1), labels = c("Girl", "Boy")),
+    child = factor(child)
+  )
+```
+
+
+# Question a: Make a Plot
+
+```{r}
+fig_spag <- df_dental |>
+  ggplot(aes(x = age, y = distance, group = child, color = gender)) +
+  geom_line(alpha = 0.7) +
+  geom_point(size = 0.4) +
+  labs(title = "Spaghetti Plot of Distance by Age and Gender",
+       x = "Age",
+       y = "Distance (mm)") +
+  theme_minimal()
+
+fig_spag
+
+ggsave("plots/2026-04-06_fig-spaghetti_dis-age-gender.png", fig_spag)
+```
+
+The plot shows that distance tends to increase with age. Boys appear to have higher distance values than girls on average, particularly at ages 12 and 14. There is also noticeable between-child variability, since the trajectories differ in both baseline level and rate of increase.  
+
+# Question c: Fit the Models
+
+```{r}
+df_dental <- df_dental |>
+  mutate(age_central = age - 8)
+```
+
+
+## Conpound Symmetry
+
+```{r}
+fit_cs <- gls(distance ~ gender + age_central, data = df_dental,
+              correlation = corCompSymm(form = ~ 1 | child), method = "REML")
+summary(fit_cs)
+```
+
+
+## Exponential Covariance
+
+```{r}
+fit_exp <- gls(distance ~ gender + age_central, data = df_dental, 
+               correlation = corExp(form = ~ age | child), method = "REML")
+summary(fit_exp)
+```
+
+
+## AR(1)
+
+```{r}
+df_dental <- df_dental[order(df_dental$child, df_dental$age), ]
+
+df_dental <- df_dental |>
+  mutate(time = ave(age, child, FUN = seq_along))
+```
+
+
+```{r}
+fit_ar1 <- gls(distance ~ gender + age_central, data = df_dental,
+               correlation = corAR1(form = ~ time | child), method = "REML")
+summary(fit_ar1)
+```
+
+
+## Compare
+
+```{r}
+coef_table <- rbind(
+  CS  = coef(fit_cs),
+  EXP = coef(fit_exp),
+  AR1 = coef(fit_ar1)
+)
+
+coef_table
+```
+
+
+
+```{r}
+AIC(fit_cs, fit_exp, fit_ar1)
+BIC(fit_cs, fit_exp, fit_ar1)
+logLik(fit_cs)
+logLik(fit_exp)
+logLik(fit_ar1)
+```
+
+
+
+```{r}
+rho_cs <- coef(fit_cs$modelStruct$corStruct, unconstrained = FALSE)
+sigma2_cs <- sigma(fit_cs)^2
+
+range_exp <- coef(fit_exp$modelStruct$corStruct, unconstrained = FALSE)
+sigma2_exp <- sigma(fit_exp)^2
+
+rho_ar1 <- coef(fit_ar1$modelStruct$corStruct, unconstrained = FALSE)
+sigma2_ar1 <- sigma(fit_ar1)^2
+
+```
+
+
+
+```{r}
+df_results <- tibble(
+  Model = c("CS", "Exponential", "AR1"),
+  Intercept = c(coef(fit_cs)[1], coef(fit_exp)[1], coef(fit_ar1)[1]),
+  GenderBoy = c(coef(fit_cs)[2], coef(fit_exp)[2], coef(fit_ar1)[2]),
+  Age_c = c(coef(fit_cs)[3], coef(fit_exp)[3], coef(fit_ar1)[3]),
+  Sigma2 = c(sigma(fit_cs)^2, sigma(fit_exp)^2, sigma(fit_ar1)^2),
+  AIC = c(AIC(fit_cs), AIC(fit_exp), AIC(fit_ar1))
+)
+df_results
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
