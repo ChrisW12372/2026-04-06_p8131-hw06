@@ -1704,17 +1704,18 @@ sigma2_ar1 &lt;- sigma(fit_ar1)^2</code></pre>
   Model = c(&quot;CS&quot;, &quot;Exponential&quot;, &quot;AR1&quot;),
   Intercept = c(coef(fit_cs)[1], coef(fit_exp)[1], coef(fit_ar1)[1]),
   GenderBoy = c(coef(fit_cs)[2], coef(fit_exp)[2], coef(fit_ar1)[2]),
+  Corr_or_Range = c(rho_cs, range_exp, rho_ar1),
   Age_c = c(coef(fit_cs)[3], coef(fit_exp)[3], coef(fit_ar1)[3]),
   Sigma2 = c(sigma(fit_cs)^2, sigma(fit_exp)^2, sigma(fit_ar1)^2),
   AIC = c(AIC(fit_cs), AIC(fit_exp), AIC(fit_ar1))
 )
 df_results</code></pre>
-<pre><code>## # A tibble: 3 × 6
-##   Model       Intercept GenderBoy Age_c Sigma2   AIC
-##   &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
-## 1 CS               20.7      2.32 0.660   5.32  448.
-## 2 Exponential      20.7      2.42 0.653   5.30  455.
-## 3 AR1              20.7      2.42 0.653   5.30  455.</code></pre>
+<pre><code>## # A tibble: 3 × 7
+##   Model       Intercept GenderBoy Corr_or_Range Age_c Sigma2   AIC
+##   &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;         &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
+## 1 CS               20.7      2.32         0.614 0.660   5.32  448.
+## 2 Exponential      20.7      2.42         4.27  0.653   5.30  455.
+## 3 AR1              20.7      2.42         0.626 0.653   5.30  455.</code></pre>
 </div>
 </div>
 

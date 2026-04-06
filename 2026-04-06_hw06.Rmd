@@ -135,6 +135,7 @@ df_results <- tibble(
   Model = c("CS", "Exponential", "AR1"),
   Intercept = c(coef(fit_cs)[1], coef(fit_exp)[1], coef(fit_ar1)[1]),
   GenderBoy = c(coef(fit_cs)[2], coef(fit_exp)[2], coef(fit_ar1)[2]),
+  Corr_or_Range = c(rho_cs, range_exp, rho_ar1),
   Age_c = c(coef(fit_cs)[3], coef(fit_exp)[3], coef(fit_ar1)[3]),
   Sigma2 = c(sigma(fit_cs)^2, sigma(fit_exp)^2, sigma(fit_ar1)^2),
   AIC = c(AIC(fit_cs), AIC(fit_exp), AIC(fit_ar1))
